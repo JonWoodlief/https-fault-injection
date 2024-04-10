@@ -1,0 +1,6 @@
+faultPercentage: 0.1
+faultDelay: 0
+urls:
+  - httpbin.org
+namespace: myns
+image: jonwoodlief/faultinjection:latest

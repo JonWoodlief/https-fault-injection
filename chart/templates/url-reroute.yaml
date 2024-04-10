@@ -1,0 +1,23 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: workload-to-sni-proxy
+  namespace: {{ $.Values.namespace }}
+spec:
+  hosts:
+  {{- range $url := .Values.urls }}
+  - {{ $url | quote }}
+  {{- end }}
+  tls:
+  - match:
+    - port: 443
+      sniHosts:
+      {{- range $url := .Values.urls }}
+      - {{ $url | quote }}
+      {{- end }}
+    route:
+    - destination:
+        host: proxy-service
+        port:
+          number: 443
+      weight: 100

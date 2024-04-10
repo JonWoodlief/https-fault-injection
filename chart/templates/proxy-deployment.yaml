@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proxy-deployment
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: proxy
+  template:
+    metadata:
+      annotations:
+        traffic.sidecar.istio.io/includeOutboundIPRanges: 172.17.0.0/18,172.21.0.0/16,172.30.0.0/16
+      labels:
+        app: proxy
+    spec:
+      containers:
+        - name: proxy-container
+          image: {{ .Values.image }}
+          env:
+            - name: FAULT_INJECTION_RATE
+              value: {{ .Values.faultPercentage | quote }}
+            - name: FAULT_INJECTION_SLEEP
+              value: {{ .Values.faultDelay | quote }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 443
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: proxy-service
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: proxy
+  ports:
+    - protocol: TCP
+      port: 443
+      targetPort: 443
